@@ -20,7 +20,7 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 # See https://docs.djangoproject.com/en/5.2/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = 'django-insecure-vv8varsf0-z-)d7*lns03p9wq#*m+4a)xl=2j&qy%f=4=oc9mj'
+SECRET_KEY = 'django-insecure-^l-ji2h2-t=duw%cuwxz2*cfx@h1ad=))1qv!syu3%_0%8k^nl'
 
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
@@ -37,6 +37,10 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+
+
+    'catalog',
+    'graphene_django',
 ]
 
 MIDDLEWARE = [
@@ -47,10 +51,6 @@ MIDDLEWARE = [
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
-
-
-    'catalog',
-    'graphene_django',
 ]
 
 ROOT_URLCONF = 'ecommerce_project.urls'
@@ -126,7 +126,6 @@ STATIC_URL = 'static/'
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
 
-# Add Graphene settings
 GRAPHENE = {
     "SCHEMA": "ecommerce_project.schema.schema" # Path to your root schema file
 }
