@@ -47,6 +47,10 @@ MIDDLEWARE = [
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
+
+
+    'catalog',
+    'graphene_django',
 ]
 
 ROOT_URLCONF = 'ecommerce_project.urls'
@@ -120,3 +124,9 @@ STATIC_URL = 'static/'
 # https://docs.djangoproject.com/en/5.2/ref/settings/#default-auto-field
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
+
+
+# Add Graphene settings
+GRAPHENE = {
+    "SCHEMA": "ecommerce_project.schema.schema" # Path to your root schema file
+}
