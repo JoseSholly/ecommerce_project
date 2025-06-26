@@ -1,0 +1,453 @@
+<!-- templates/admin/analytics_dashboard.html -->
+{% extends "admin/base_site.html" %}
+{% load static %}
+
+{% block title %}Analytics Dashboard{% endblock %}
+
+{% block extrastyle %}
+<style>
+    .analytics-container {
+        padding: 20px;
+        background: #f8fafc;
+        min-height: 100vh;
+    }
+    
+    .stats-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+        gap: 20px;
+        margin-bottom: 30px;
+    }
+    
+    .stat-card {
+        background: white;
+        border-radius: 12px;
+        padding: 24px;
+        box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+        border: 1px solid #e5e7eb;
+        transition: transform 0.2s ease;
+    }
+    
+    .stat-card:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+    }
+    
+    .stat-title {
+        font-size: 14px;
+        color: #6b7280;
+        margin-bottom: 8px;
+        font-weight: 500;
+    }
+    
+    .stat-value {
+        font-size: 32px;
+        font-weight: bold;
+        color: #1f2937;
+        margin-bottom: 4px;
+    }
+    
+    .stat-change {
+        font-size: 12px;
+        padding: 2px 8px;
+        border-radius: 12px;
+        font-weight: 500;
+    }
+    
+    .stat-positive {
+        background: #dcfce7;
+        color: #166534;
+    }
+    
+    .stat-negative {
+        background: #fef2f2;
+        color: #dc2626;
+    }
+    
+    .stat-warning {
+        background: #fef3c7;
+        color: #d97706;
+    }
+    
+    .charts-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
+        gap: 20px;
+        margin-bottom: 30px;
+    }
+    
+    .chart-card {
+        background: white;
+        border-radius: 12px;
+        padding: 24px;
+        box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+        border: 1px solid #e5e7eb;
+    }
+    
+    .chart-title {
+        font-size: 18px;
+        font-weight: 600;
+        color: #1f2937;
+        margin-bottom: 20px;
+    }
+    
+    .table-container {
+        background: white;
+        border-radius: 12px;
+        overflow: hidden;
+        box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+        border: 1px solid #e5e7eb;
+    }
+    
+    .table-header {
+        background: #f9fafb;
+        padding: 20px 24px;
+        border-bottom: 1px solid #e5e7eb;
+    }
+    
+    .table-title {
+        font-size: 18px;
+        font-weight: 600;
+        color: #1f2937;
+    }
+    
+    .data-table {
+        width: 100%;
+        border-collapse: collapse;
+    }
+    
+    .data-table th {
+        background: #f9fafb;
+        padding: 12px 24px;
+        text-align: left;
+        font-weight: 600;
+        color: #374151;
+        border-bottom: 1px solid #e5e7eb;
+    }
+    
+    .data-table td {
+        padding: 12px 24px;
+        border-bottom: 1px solid #f3f4f6;
+        color: #1f2937;
+    }
+    
+    .data-table tr:hover {
+        background: #f9fafb;
+    }
+    
+    .icon {
+        width: 48px;
+        height: 48px;
+        border-radius: 12px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin-bottom: 16px;
+        font-size: 24px;
+    }
+    
+    .icon-blue { background: #dbeafe; color: #1e40af; }
+    .icon-green { background: #dcfce7; color: #166534; }
+    .icon-yellow { background: #fef3c7; color: #d97706; }
+    .icon-red { background: #fef2f2; color: #dc2626; }
+    .icon-purple { background: #f3e8ff; color: #7c3aed; }
+    .icon-indigo { background: #e0e7ff; color: #4338ca; }
+</style>
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+{% endblock %}
+
+{% block content %}
+<div class="analytics-container">
+    <h1 style="font-size: 28px; font-weight: bold; color: #1f2937; margin-bottom: 30px;">
+        📊 Analytics Dashboard
+    </h1>
+    
+    <!-- Key Statistics -->
+    <div class="stats-grid">
+        <div class="stat-card">
+            <div class="icon icon-blue">📦</div>
+            <div class="stat-title">Total Products</div>
+            <div class="stat-value">{{ total_products|floatformat:0 }}</div>
+            {% if new_products_30d > 0 %}
+                <span class="stat-change stat-positive">+{{ new_products_30d }} this month</span>
+            {% endif %}
+        </div>
+        
+        <div class="stat-card">
+            <div class="icon icon-purple">🏷️</div>
+            <div class="stat-title">Categories</div>
+            <div class="stat-value">{{ total_categories }}</div>
+        </div>
+        
+        <div class="stat-card">
+            <div class="icon icon-green">💰</div>
+            <div class="stat-title">Total Stock Value</div>
+            <div class="stat-value">${{ total_stock_value|floatformat:2 }}</div>
+        </div>
+        
+        <div class="stat-card">
+            <div class="icon icon-indigo">📊</div>
+            <div class="stat-title">Average Price</div>
+            <div class="stat-value">${{ avg_price|floatformat:2 }}</div>
+        </div>
+        
+        <div class="stat-card">
+            <div class="icon icon-yellow">⚠️</div>
+            <div class="stat-title">Low Stock Items</div>
+            <div class="stat-value">{{ low_stock_products }}</div>
+            {% if low_stock_products > 0 %}
+                <span class="stat-change stat-warning">Needs attention</span>
+            {% endif %}
+        </div>
+        
+        <div class="stat-card">
+            <div class="icon icon-red">❌</div>
+            <div class="stat-title">Out of Stock</div>
+            <div class="stat-value">{{ out_of_stock_products }}</div>
+            {% if out_of_stock_products > 0 %}
+                <span class="stat-change stat-negative">Urgent</span>
+            {% endif %}
+        </div>
+    </div>
+    
+    <!-- Charts -->
+    <div class="charts-grid">
+        <div class="chart-card">
+            <div class="chart-title">Products by Category</div>
+            <canvas id="categoryChart" width="400" height="300"></canvas>
+        </div>
+        
+        <div class="chart-card">
+            <div class="chart-title">Price Distribution</div>
+            <canvas id="priceChart" width="400" height="300"></canvas>
+        </div>
+        
+        <div class="chart-card">
+            <div class="chart-title">Stock Status Overview</div>
+            <canvas id="stockChart" width="400" height="300"></canvas>
+        </div>
+        
+        <div class="chart-card">
+            <div class="chart-title">Daily Product Creation (Last 30 Days)</div>
+            <canvas id="dailyChart" width="400" height="300"></canvas>
+        </div>
+    </div>
+    
+    <!-- Data Tables -->
+    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-bottom: 20px;">
+        <!-- Category Performance -->
+        <div class="table-container">
+            <div class="table-header">
+                <div class="table-title">📋 Category Performance</div>
+            </div>
+            <table class="data-table">
+                <thead>
+                    <tr>
+                        <th>Category</th>
+                        <th>Products</th>
+                        <th>Avg Price</th>
+                        <th>Total Value</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for category in category_stats %}
+                    <tr>
+                        <td><strong>{{ category.name }}</strong></td>
+                        <td>{{ category.product_count }}</td>
+                        <td>${{ category.avg_price|default:0|floatformat:2 }}</td>
+                        <td>${{ category.total_value|default:0|floatformat:2 }}</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        
+        <!-- Currency Distribution -->
+        <div class="table-container">
+            <div class="table-header">
+                <div class="table-title">💱 Currency Distribution</div>
+            </div>
+            <table class="data-table">
+                <thead>
+                    <tr>
+                        <th>Currency</th>
+                        <th>Products</th>
+                        <th>Total Value</th>
+                        <th>Percentage</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for currency in currency_stats %}
+                    <tr>
+                        <td><strong>{{ currency.currency }}</strong></td>
+                        <td>{{ currency.count }}</td>
+                        <td>${{ currency.total_value|default:0|floatformat:2 }}</td>
+                        <td>{{ currency.count|mul:100|div:total_products|floatformat:1 }}%</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+    
+    <!-- Top Products -->
+    <div class="table-container">
+        <div class="table-header">
+            <div class="table-title">🏆 Top Products by Stock Value</div>
+        </div>
+        <table class="data-table">
+            <thead>
+                <tr>
+                    <th>Rank</th>
+                    <th>Product</th>
+                    <th>Category</th>
+                    <th>Price</th>
+                    <th>Stock</th>
+                    <th>Stock Value</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for product in top_products %}
+                <tr>
+                    <td><strong>#{{ forloop.counter }}</strong></td>
+                    <td>{{ product.name }}</td>
+                    <td>{{ product.category.name|default:"No Category" }}</td>
+                    <td>{{ product.currency }} {{ product.price }}</td>
+                    <td>{{ product.stock_quantity }}</td>
+                    <td>${{ product.stock_value|floatformat:2 }}</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<script>
+// Chart.js configurations
+const chartColors = {
+    primary: '#3b82f6',
+    success: '#10b981',
+    warning: '#f59e0b',
+    danger: '#ef4444',
+    info: '#06b6d4',
+    purple: '#8b5cf6'
+};
+
+// Category Chart
+const categoryCtx = document.getElementById('categoryChart').getContext('2d');
+const categoryChart = new Chart(categoryCtx, {
+    type: 'doughnut',
+    data: {
+        labels: [{% for cat in category_stats %}'{{ cat.name }}'{% if not forloop.last %},{% endif %}{% endfor %}],
+        datasets: [{
+            data: [{% for cat in category_stats %}{{ cat.product_count }}{% if not forloop.last %},{% endif %}{% endfor %}],
+            backgroundColor: [
+                chartColors.primary,
+                chartColors.success,
+                chartColors.warning,
+                chartColors.danger,
+                chartColors.info,
+                chartColors.purple,
+                '#f97316',
+                '#84cc16'
+            ]
+        }]
+    },
+    options: {
+        responsive: true,
+        plugins: {
+            legend: {
+                position: 'bottom'
+            }
+        }
+    }
+});
+
+// Price Distribution Chart
+const priceCtx = document.getElementById('priceChart').getContext('2d');
+const priceChart = new Chart(priceCtx, {
+    type: 'bar',
+    data: {
+        labels: [{% for range in price_ranges %}'{{ range.0 }}'{% if not forloop.last %},{% endif %}{% endfor %}],
+        datasets: [{
+            label: 'Products',
+            data: [{% for range in price_ranges %}{{ range.1 }}{% if not forloop.last %},{% endif %}{% endfor %}],
+            backgroundColor: chartColors.primary,
+            borderRadius: 8
+        }]
+    },
+    options: {
+        responsive: true,
+        plugins: {
+            legend: {
+                display: false
+            }
+        },
+        scales: {
+            y: {
+                beginAtZero: true
+            }
+        }
+    }
+});
+
+// Stock Status Chart
+const stockCtx = document.getElementById('stockChart').getContext('2d');
+const stockChart = new Chart(stockCtx, {
+    type: 'pie',
+    data: {
+        labels: ['In Stock (10+)', 'Low Stock (1-9)', 'Out of Stock'],
+        datasets: [{
+            data: [
+                {{ total_products }} - {{ low_stock_products }} - {{ out_of_stock_products }},
+                {{ low_stock_products }},
+                {{ out_of_stock_products }}
+            ],
+            backgroundColor: [
+                chartColors.success,
+                chartColors.warning,
+                chartColors.danger
+            ]
+        }]
+    },
+    options: {
+        responsive: true,
+        plugins: {
+            legend: {
+                position: 'bottom'
+            }
+        }
+    }
+});
+
+// Daily Creation Chart
+const dailyCtx = document.getElementById('dailyChart').getContext('2d');
+const dailyChart = new Chart(dailyCtx, {
+    type: 'line',
+    data: {
+        labels: [{% for day in daily_creation %}'{{ day.date|date:"M j" }}'{% if not forloop.last %},{% endif %}{% endfor %}],
+        datasets: [{
+            label: 'Products Created',
+            data: [{% for day in daily_creation %}{{ day.count }}{% if not forloop.last %},{% endif %}{% endfor %}],
+            borderColor: chartColors.primary,
+            backgroundColor: chartColors.primary + '20',
+            fill: true,
+            tension: 0.4
+        }]
+    },
+    options: {
+        responsive: true,
+        plugins: {
+            legend: {
+                display: false
+            }
+        },
+        scales: {
+            y: {
+                beginAtZero: true
+            }
+        }
+    }
+});
+</script>
+{% endblock %}
