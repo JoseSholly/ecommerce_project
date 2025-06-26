@@ -2,7 +2,7 @@ from django.core.management.base import BaseCommand
 from django.db import transaction
 from decimal import Decimal
 import random
-from catalog.models import Category, Product  # Replace 'myapp' with your actual app name
+from catalog.models import Category, Product  
 
 
 class Command(BaseCommand):

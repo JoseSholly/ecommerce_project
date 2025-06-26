@@ -23,8 +23,8 @@ class Query(graphene.ObjectType):
         category_id=graphene.ID(),
         min_price=graphene.Float(),
         max_price=graphene.Float(),
-        search=graphene.String(), # For name or description search
-        order_by=graphene.String(), # For sorting
+        search=graphene.String(), 
+        order_by=graphene.String(),
     )
 
     # Query for a single category by ID
@@ -197,5 +197,5 @@ class Mutation(graphene.ObjectType):
     update_product = UpdateProduct.Field()
     delete_product = DeleteProduct.Field()
 
-# --- Root Schema ---
+
 schema = graphene.Schema(query=Query, mutation=Mutation)
